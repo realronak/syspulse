@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# SysPulse Standalone Launcher
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+
+# Prefer project virtual environment if available, otherwise fallback to system python
+if [[ -f "$PROJECT_DIR/.venv/bin/python3" ]]; then
+    PYTHON_EXEC="$PROJECT_DIR/.venv/bin/python3"
+else
+    PYTHON_EXEC="python3"
+fi
+
+export PYTHONPATH="$PROJECT_DIR:${PYTHONPATH:-}"
+exec "$PYTHON_EXEC" -m syspulse "$@"
