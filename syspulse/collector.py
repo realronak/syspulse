@@ -171,9 +171,12 @@ def get_cpu_model_name() -> str:
             for line in f:
                 if "model name" in line:
                     return line.split(":", 1)[1].strip()
+                elif line.startswith("Model") or line.startswith("Hardware"):
+                    return line.split(":", 1)[1].strip()
     except Exception:
         pass
     return platform.processor() or "Unknown CPU"
+
 
 
 def get_os_display_name() -> str:
@@ -266,9 +269,12 @@ class MetricsCollector:
             cpu_total = float(psutil.cpu_percent(interval=None))
             per_core = [float(p) for p in psutil.cpu_percent(interval=None, percpu=True)]
             freq = 0.0
-            freq_info = psutil.cpu_freq()
-            if freq_info:
-                freq = float(freq_info.current)
+            try:
+                freq_info = psutil.cpu_freq()
+                if freq_info and hasattr(freq_info, "current") and freq_info.current is not None:
+                    freq = float(freq_info.current)
+            except Exception:
+                freq = 0.0
             cpu_snap = CpuSnapshot(
                 total_percent=cpu_total,
                 per_core=per_core,
@@ -326,7 +332,7 @@ class MetricsCollector:
                         )
                     )
                     seen_mounts.add(p.mountpoint)
-                except (PermissionError, FileNotFoundError):
+                except (PermissionError, FileNotFoundError, OSError):
                     continue
         except Exception:
             pass
@@ -510,11 +516,15 @@ class MetricsCollector:
                 )
 
         try:
-            fan_dict = getattr(psutil, "sensors_fans", lambda: {})()
-            for chip, fan_list in fan_dict.items():
-                for f in fan_list:
-                    lbl = f.label or chip
-                    fans.append((lbl, int(f.current)))
+            fan_func = getattr(psutil, "sensors_fans", None)
+            if callable(fan_func):
+                fan_dict = fan_func()
+                if fan_dict and isinstance(fan_dict, dict):
+                    for chip, fan_list in fan_dict.items():
+                        for f in fan_list:
+                            lbl = getattr(f, "label", None) or chip
+                            current_rpm = getattr(f, "current", 0)
+                            fans.append((lbl, int(current_rpm)))
         except Exception:
             pass
 
@@ -526,13 +536,16 @@ class MetricsCollector:
             if not base.exists():
                 return None
             for zone in base.glob("thermal_zone*"):
-                temp_file = zone / "temp"
-                if temp_file.is_file():
-                    with open(temp_file, "r", encoding="utf-8") as f:
-                        raw = f.read().strip()
-                        val = float(raw) / 1000.0
-                        if 10.0 <= val <= 115.0:
-                            return round(val, 1)
+                try:
+                    temp_file = zone / "temp"
+                    if temp_file.is_file():
+                        with open(temp_file, "r", encoding="utf-8") as f:
+                            raw = f.read().strip()
+                            val = float(raw) / 1000.0
+                            if 10.0 <= val <= 115.0:
+                                return round(val, 1)
+                except Exception:
+                    continue
         except Exception:
             pass
         return None
@@ -566,7 +579,7 @@ class MetricsCollector:
                             status=status,
                         )
                     )
-                except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess, psutil.Error, Exception):
                     continue
         except Exception:
             pass

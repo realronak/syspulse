@@ -58,9 +58,14 @@ class SysPulseApplication(Gtk.Application):
 
 
 def main() -> int:
+    if "--version" in sys.argv or "-v" in sys.argv:
+        from syspulse import __version__
+        print(f"SysPulse {__version__}")
+        return 0
     app = SysPulseApplication()
     return app.run(sys.argv)
 
 
 if __name__ == "__main__":
     sys.exit(main())
+

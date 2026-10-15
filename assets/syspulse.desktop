@@ -1,10 +1,12 @@
 [Desktop Entry]
 Name=SysPulse
 Comment=Lightweight, native Linux system monitor
-Exec=/home/ron/syspulse/bin/syspulse
-Icon=/home/ron/syspulse/assets/syspulse.svg
+Exec=syspulse
+Icon=syspulse
 Terminal=false
 Type=Application
 Categories=System;Monitor;
 Keywords=system;monitor;cpu;memory;network;process;tasks;hyprland;arch;
 StartupWMClass=io.github.syspulse.SysPulse
+StartupNotify=true
+

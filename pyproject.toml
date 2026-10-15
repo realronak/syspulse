@@ -1,0 +1,41 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[project]
+name = "syspulse"
+version = "1.0.0"
+description = "Lightweight, responsive Linux system monitor built with GTK 4, PyGObject, and Cairo"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "realronak"}
+]
+keywords = ["linux", "arch-linux", "python", "gtk4", "system-monitor", "wayland", "cairo"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: X11 Applications :: GTK",
+    "Intended Audience :: End Users/Desktop",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: System :: Monitoring",
+]
+dependencies = [
+    "psutil>=5.9.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/realronak/syspulse"
+Repository = "https://github.com/realronak/syspulse"
+Issues = "https://github.com/realronak/syspulse/issues"
+
+[project.scripts]
+syspulse = "syspulse.app:main"
